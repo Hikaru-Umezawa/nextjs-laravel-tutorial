@@ -24,7 +24,7 @@ class LoginController extends Controller
         }
 
         // ログイン失敗時のエラーメッセージ
-        throw new ValidationException([
+        throw ValidationException::withMessages([
             'loginFailed' => 'IDまたはパスワードが間違っています。'
         ]);
     }
