@@ -10,6 +10,11 @@ type MemoForm = {
   body: string;
 }
 
+type Validation = {
+  title?: string;
+  body?: string;
+}
+
 const Post: NextPage = () => {
   const router = useRouter();
 
@@ -18,7 +23,7 @@ const Post: NextPage = () => {
     body: ""
   })
 
-  const [validation, setValidation] = useState<MemoForm>({
+  const [validation, setValidation] = useState<Validation>({
     title: "",
     body: ""
   })
@@ -33,7 +38,19 @@ const Post: NextPage = () => {
         console.log(response.data);
         router.push('/memos');
       }).catch((err: AxiosError) => {
-        console.log(err.response);
+        if (err.response?.status === 422) {
+          const errors = err.response?.data.errors;
+          const validationMessage: { [index: string]: string } = {} as Validation;
+          if (errors as Object) {
+            Object.keys(errors).map((key: string) => {
+              validationMessage[key] = errors[key][0];
+            })
+            setValidation(validationMessage);
+          }
+        }
+        if (err.response?.status === 500) {
+          alert('システムエラーです！');
+        }
       })
     })
   }
@@ -53,6 +70,9 @@ const Post: NextPage = () => {
             value={memoForm.title}
             onChange={updateMemoForm}
           />
+          {validation.title && (
+            <p className='py-3 text-red-500'>{validation.title}</p>
+          )}
         </div>
         <div className='mb-5'>
           <div className='flex justify-start my-2'>
@@ -67,6 +87,9 @@ const Post: NextPage = () => {
             value={memoForm.body}
             onChange={updateMemoForm}
           />
+          {validation.body && (
+            <p className='py-3 text-red-500'>{validation.body}</p>
+          )}
         </div>
         <div className='text-center'>
           <button className='bg-gray-700 text-gray-50 py-3 sm:px-20 px-10 mt-8 rounded-xl cursor-pointer drop-shadow-md hover:bg-gray-600' onClick={createMemo}>

@@ -33,7 +33,6 @@ const Memo: NextPage = () => {
         </button>
       </div>
       <div className='mt-3'>
-        {/* 仮データでの一覧表示 */}
         <div className='grid w-2/3 mx-auto gap-4 grid-cols-2'>
           {memos.map((memo: Memo, index) => {
             return (
