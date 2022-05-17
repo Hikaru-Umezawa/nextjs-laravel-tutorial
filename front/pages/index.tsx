@@ -2,6 +2,7 @@ import { AxiosError, AxiosResponse } from 'axios';
 import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { ChangeEvent, useState } from 'react';
+import { useUserState } from '../atoms/userAtom';
 import { RequiredMark } from '../components/RequiredMark';
 import { axiosApi } from '../lib/axios';
 
@@ -36,6 +37,8 @@ const Home: NextPage = () => {
     setLoginForm({ ...loginForm, [e.target.name]: e.target.value });
   }
 
+  const { setUser } = useUserState();
+
   const login = () => {
     // バリデーションメッセージの初期化
     setValidation({});
@@ -45,7 +48,7 @@ const Home: NextPage = () => {
       .then((res) => {
         axiosApi.post('/login', loginForm)
           .then((response: AxiosResponse) => {
-            console.log(response.data);
+            setUser(response.data.data);
             router.push('/memos');
           })
           .catch((err: AxiosError) => {

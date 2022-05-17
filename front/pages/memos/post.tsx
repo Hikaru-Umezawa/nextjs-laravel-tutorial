@@ -2,6 +2,7 @@ import { AxiosError, AxiosResponse } from 'axios';
 import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { ChangeEvent, useState } from 'react';
+import { useUserState } from '../../atoms/userAtom';
 import { RequiredMark } from '../../components/RequiredMark';
 import { axiosApi } from '../../lib/axios';
 
@@ -28,11 +29,17 @@ const Post: NextPage = () => {
     body: ""
   })
 
+  const { user } = useUserState();
+
   const updateMemoForm = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setMemoForm({ ...memoForm, [e.target.name]: e.target.value })
   }
 
   const createMemo = () => {
+    if (!user) {
+      router.push('/');
+      return;
+    }
     axiosApi.get('sanctum/csrf-cookie').then((res) => {
       axiosApi.post('/api/memos', memoForm).then((response: AxiosResponse) => {
         console.log(response.data);
