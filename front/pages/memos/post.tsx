@@ -1,9 +1,10 @@
 import { AxiosError, AxiosResponse } from 'axios';
 import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { useUserState } from '../../atoms/userAtom';
 import { RequiredMark } from '../../components/RequiredMark';
+import { useAuth } from '../../hooks/useAuth';
 import { axiosApi } from '../../lib/axios';
 
 type MemoForm = {
@@ -24,22 +25,15 @@ const Post: NextPage = () => {
     body: ""
   })
 
-  const [validation, setValidation] = useState<Validation>({
-    title: "",
-    body: ""
-  })
+  const [validation, setValidation] = useState<Validation>({})
 
-  const { user } = useUserState();
+  const { checkLoggedIn } = useAuth();
 
   const updateMemoForm = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setMemoForm({ ...memoForm, [e.target.name]: e.target.value })
   }
 
   const createMemo = () => {
-    if (!user) {
-      router.push('/');
-      return;
-    }
     axiosApi.get('sanctum/csrf-cookie').then((res) => {
       axiosApi.post('/api/memos', memoForm).then((response: AxiosResponse) => {
         console.log(response.data);
@@ -62,6 +56,17 @@ const Post: NextPage = () => {
     })
   }
 
+  useEffect(() => {
+    const init = async () => {
+      const res: boolean = await checkLoggedIn();
+      if (!res) {
+        router.push('/');
+        return
+      }
+    }
+    init();
+  }, [])
+
   return (
     <div className='w-2/3 mx-auto'>
       <div className='w-1/2 mx-auto mt-32 border-2 px-12 py-16 rounded-2xl'>
@@ -80,6 +85,7 @@ const Post: NextPage = () => {
           {validation.title && (
             <p className='py-3 text-red-500'>{validation.title}</p>
           )}
+
         </div>
         <div className='mb-5'>
           <div className='flex justify-start my-2'>

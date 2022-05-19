@@ -2,7 +2,7 @@ import { AxiosError, AxiosResponse } from 'axios';
 import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { useUserState } from '../../atoms/userAtom';
+import { useAuth } from '../../hooks/useAuth';
 import { axiosApi } from '../../lib/axios';
 
 type Memo = {
@@ -15,20 +15,25 @@ const Memo: NextPage = () => {
 
   const [memos, setMemos] = useState<Memo[]>([]);
 
-  const { user } = useUserState();
+  const { checkLoggedIn } = useAuth();
 
   useEffect(() => {
-    if (!user) {
-      router.push('/');
-      return
+    const init = async () => {
+      const res: boolean = await checkLoggedIn();
+      if (!res) {
+        router.push('/');
+        return
+      }
     }
+    init();
+
     axiosApi.get('/api/memos')
       .then((response: AxiosResponse) => {
         console.log(response);
         setMemos(response.data.data);
       })
       .catch((err: AxiosError) => console.log(err.response))
-  }, [user, router]);
+  }, []);
   return (
     <div className='w-2/3 mx-auto mt-32'>
       <div className='w-1/2 mx-auto text-center'>
